@@ -151,13 +151,19 @@
   <div class="card">
 
     <section class="q-block">
-      <div class="q-title"><span class="q-num">1</span><div>您正在使用的产品是？<span class="req"></span></div></div>
+      <div class="q-title"><span class="q-num">1</span><div>欢迎，请问怎么称呼？</div></div>
+      <p class="q-sub">选填，可留空，匿名反馈也欢迎。</p>
+      <div class="field"><input type="text" id="nickName" maxlength="30" placeholder="例如：王老师 / Ms. Wang" autocomplete="off"></div>
+    </section>
+
+    <section class="q-block">
+      <div class="q-title"><span class="q-num">2</span><div>您正在使用的产品是？<span class="req"></span></div></div>
       <p class="q-sub">可多选。</p>
       <div class="prod-cards" id="productOpts"></div>
     </section>
 
     <section class="q-block">
-      <div class="q-title"><span class="q-num">2</span><div>在当前版本的使用中，您遇到的问题和建议是？<span class="req"></span></div></div>
+      <div class="q-title"><span class="q-num">3</span><div>在当前版本的使用中，您遇到的问题和建议是？<span class="req"></span></div></div>
       <p class="q-sub">具体到哪个环节、发生了什么、希望怎么改进，都可以写在这里。</p>
       <div class="field"><textarea id="feedbackText" style="min-height:130px" placeholder="例如：在《小积木》生成题卡时……希望能……"></textarea></div>
     </section>
@@ -210,7 +216,7 @@
       问题和建议:fb,
       /* 兼容旧版收表脚本的字段结构 */
       各产品反馈:[{产品:sel.map(p=>p.name).join('、'),评分:"",问题类型:[],问题描述:fb,升级建议:""}],
-      期待的AI产品:"",称呼:"",联系方式:""
+      期待的AI产品:"",称呼:(document.getElementById('nickName').value||"").trim(),联系方式:""
     };
   }
   function validate(d){
@@ -225,7 +231,7 @@
       try{
         // Google Apps Script: 用 text/plain 避免 CORS 预检；no-cors 模式下无法读返回值，但数据会写入
         await fetch(FORM_ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d)});
-        toast('提交成功，感谢您的反馈！');
+        toast(d.称呼? ('提交成功，谢谢您，'+d.称呼+' 💐') : '提交成功，感谢您的反馈！');
         setTimeout(resetForm,1200);
       }catch(e){toast('网络异常，已为您下载本地备份');downloadJSON();}
     }
@@ -234,6 +240,7 @@
   function resetForm(){
     PRODUCTS.forEach(p=>{const c=document.getElementById('prod_'+p.key);if(c)c.checked=false;});
     const f=document.getElementById('feedbackText'); if(f)f.value='';
+    const n=document.getElementById('nickName'); if(n)n.value='';
     window.scrollTo({top:0,behavior:'smooth'});
   }
   function downloadJSON(){const b=new Blob([JSON.stringify(collect(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='产品反馈_'+Date.now()+'.json';a.click();URL.revokeObjectURL(a.href);}
